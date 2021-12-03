@@ -6,11 +6,13 @@ import Control.Monad (void)
 import Data.Char (isDigit)
 import Text.ParserCombinators.ReadP
 
+import ParseHelper
+
 main :: IO ()
 main = do
-    commands <- parseCommands <$> getContents
+    commands <- parseInput parseCommand <$> getContents
     putStrLn $ "Part 1: " <> show (makeMoves commands)
-    putStrLn $ "Part 1: " <> show (makeAimedMoves commands)
+    putStrLn $ "Part 2: " <> show (makeAimedMoves commands)
 
 
 data Command
@@ -33,22 +35,6 @@ parseCommand =
             skipSpaces
             num <- read <$> many1 (satisfy isDigit)
             return $ tag num
-
-parseCommands :: String -> [Command]
-parseCommands =
-    fst
-        . head
-        . filter ((== "") . snd)
-        . readP_to_S (sepBy parseCommand newline <* end)
-    where
-        newline =
-            choice
-                [ void $ char '\r' *> char '\n'
-                , void $ char '\n'
-                ]
-        end =
-            many $ choice [newline, eof]
-
 
 makeMoves :: [Command] -> Int
 makeMoves = uncurry (*) . foldl' go (0, 0)
