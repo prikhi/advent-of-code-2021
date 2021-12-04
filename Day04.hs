@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 module Day04 where
 
 import Control.Monad (void, foldM, replicateM)
@@ -12,15 +12,13 @@ import Data.Maybe (isJust)
 import Data.List (foldl')
 import Text.ParserCombinators.ReadP
 
+import Harness
 import ParseHelper
 
 
 main :: IO ()
 main = do
-    input <- getContents
-    let (numbers, boards) = parse input
-    putStrLn $ "Part 1: " <> show (findWinner boards numbers)
-    putStrLn $ "Part 2: " <> show (findLoser boards numbers)
+    getInputAndSolve parse (uncurry findWinner) (uncurry findLoser)
     where
         parse :: String -> ([Int], [Board])
         parse = parseInputRaw $ do
@@ -30,12 +28,12 @@ main = do
             return (moves, bs)
 
 
-findWinner :: [Board] -> [Int] -> Int
-findWinner bs =
-    fromLeft (error "tie") . foldM (\bs_ n -> mapM (callNumber n) bs_) bs
+findWinner :: [Int] -> [Board] -> Int
+findWinner ns bs =
+    fromLeft (error "tie") $ foldM (\bs_ n -> mapM (callNumber n) bs_) bs ns
 
-findLoser :: [Board] -> [Int] -> Int
-findLoser bs_ nums =
+findLoser :: [Int] -> [Board] -> Int
+findLoser nums bs_ =
     either id (error "no boards") $ foldM go bs_ nums
     where
         go :: [Board] -> Int -> Either Int [Board]
@@ -108,6 +106,10 @@ calculateScore lastCalled uncalled =
 
 
 -- i wanna stay in base so bad lol
+--
+-- TODO: make these balanced
+-- https://www.cmi.ac.in/~madhavan/courses/prog2-2012/lectures/balanced-search-trees-in-haskell.txt
+
 data MyMap a b
     = Branch (MyMap a b) a b (MyMap a b)
     | Leaf

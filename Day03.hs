@@ -1,37 +1,31 @@
+{-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
-import Control.Exception
-import Debug.Trace
 import Data.Bifunctor (bimap)
 import Data.Bits (shiftL, (.|.), setBit, testBit, complementBit, finiteBitSize, countLeadingZeros)
 import Data.Functor (($>))
 import Data.List (transpose, partition, foldl')
-import Data.Time (getCurrentTime, diffUTCTime)
 import Text.ParserCombinators.ReadP
 
+import Harness
 import ParseHelper
 
 main :: IO ()
 main = do
-    rawInput <- getContents >>= evaluate
-    putStrLn "With Bool Arrays"
-    t1 <- getCurrentTime
-    bitMatrix <- evaluate $ parseInput parseBitArray rawInput
-    putStrLn $ "Part 1: " <> show (calculatePowerConsumption bitMatrix)
-    putStrLn $ "Part 2: " <> show (calculateLifeSupportRating bitMatrix)
-    t2 <- getCurrentTime
-    putStrLn $ "Timing: " <> show (diffUTCTime t2 t1)
+    rawInput <- getRawInput
+    solve "Bool Matrix" (parseInput parseBitArray) calculatePowerConsumption calculateLifeSupportRating rawInput
 
-    putStrLn "\nWith Int Array"
-    t3 <- getCurrentTime
-    intBitArray <- evaluate $ parseInput parseBitInt rawInput
-    let bitSize = finiteBitSize (1 :: Int) - minimum (map countLeadingZeros intBitArray)
-    putStrLn $ "Part 1: " <> show (cPCInt bitSize intBitArray)
-    putStrLn $ "Part 2: " <> show (cLSRInt bitSize intBitArray)
-    t4 <- getCurrentTime
-    putStrLn $ "Timing: " <> show (diffUTCTime t4 t3)
+    putStrLn ""
+
+    let intArrayParser = \str ->
+            let !res = parseInput parseBitInt str
+                !bitSize = finiteBitSize (1 :: Int) - minimum (map countLeadingZeros res)
+            in  (bitSize, res)
+    solve "Int Array" intArrayParser (uncurry cPCInt) (uncurry cLSRInt) rawInput
+
 
 parseBitArray :: ReadP [Bool]
 parseBitArray =
