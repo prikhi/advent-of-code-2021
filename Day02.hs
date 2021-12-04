@@ -3,7 +3,6 @@ module Day02 where
 
 import Data.List (foldl')
 import Control.Monad (void)
-import Data.Char (isDigit)
 import Text.ParserCombinators.ReadP
 
 import ParseHelper
@@ -33,8 +32,7 @@ parseCommand =
         intCmd label tag = do
             void $ string label
             skipSpaces
-            num <- read <$> many1 (satisfy isDigit)
-            return $ tag num
+            tag <$> parseInt
 
 makeMoves :: [Command] -> Int
 makeMoves = uncurry (*) . foldl' go (0, 0)

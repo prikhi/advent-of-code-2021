@@ -1,17 +1,42 @@
 module ParseHelper where
 
-import Control.Monad (void)
+import Control.Monad (forM_, void)
+import Data.Char (isDigit)
+import Data.List (sortOn)
+import Data.Maybe (listToMaybe)
 import Text.ParserCombinators.ReadP
 
 
-parseInput :: ReadP x -> String -> [x]
+parseInput :: Show x => ReadP x -> String -> [x]
 parseInput parser =
-    fst . head . filter ((== "") . snd) . readP_to_S (sepBy parser newline <* end)
+    parseInputRaw $ sepBy parser newline <* end
     where
-        newline =
-            choice
-                [ void $ char '\r' *> char '\n'
-                , void $ char '\n'
-                ]
-        end =
-            many $ choice [newline, eof]
+        end = many $ choice [void newline, eof]
+
+parseInputRaw :: Show x => ReadP x -> String -> x
+parseInputRaw parser str =
+    let results = readP_to_S parser str
+        successes = filter ((== "") . snd) results
+        longestAttempts = sortOn (length . snd) results
+    in  case listToMaybe successes of
+            Nothing ->
+                error $ "Parsing failure, longest attempt: " <> show (head longestAttempts)
+            Just success ->
+                fst success
+
+newline :: ReadP Char
+newline = choice
+    [ char '\r' *> char '\n'
+    , char '\n'
+    ]
+
+parseInt :: ReadP Int
+parseInt = read <$> many1 (satisfy isDigit)
+
+
+parseIntArray :: Maybe Char -> Maybe Char -> ReadP [Int]
+parseIntArray maybeStart maybeEnd = do
+    mapM_ char maybeStart
+    ints <- sepBy parseInt (skipSpaces *> char ',' *> skipSpaces)
+    mapM_ char maybeEnd
+    return ints
