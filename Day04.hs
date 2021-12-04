@@ -8,12 +8,13 @@ module Day04 where
 
 import Control.Monad (void, foldM, replicateM)
 import Data.Either (isRight, fromLeft)
-import Data.Maybe (isJust)
-import Data.List (foldl')
 import Text.ParserCombinators.ReadP
 
 import Harness
 import ParseHelper
+
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 
 main :: IO ()
@@ -48,15 +49,15 @@ data Board =
     Board
         { cellList :: [Int]
         -- ^ Numbers
-        , numberIndexes :: MyMap Int Int
+        , numberIndexes :: M.Map Int Int
         -- ^ Number -> Index
-        , calledNumbers :: MySet Int
+        , calledNumbers :: S.Set Int
         } deriving (Show, Read)
 
 mkBoard :: [Int] -> Board
 mkBoard cellList =
-    let numberIndexes = mkMap $ zip cellList [0 .. ]
-        calledNumbers = setEmpty
+    let numberIndexes = M.fromList $ zip cellList [0 .. ]
+        calledNumbers = S.empty
     in  Board {..}
 
 parseBoard :: ReadP Board
@@ -67,15 +68,15 @@ parseBoard = do
 
 markNewNumber :: Int -> Board -> Board
 markNewNumber n b@Board{..} =
-    b { calledNumbers = setInsert n calledNumbers }
+    b { calledNumbers = S.insert n calledNumbers }
 
 getIndexOfNumber :: Int -> Board -> Maybe Int
 getIndexOfNumber n Board{..} =
-    mapLookup n numberIndexes
+    M.lookup n numberIndexes
 
 getUncalledNumbers :: Board -> [Int]
 getUncalledNumbers Board{calledNumbers, numberIndexes} =
-    filter (not . flip setContains calledNumbers) . map fst $ mapToList numberIndexes
+    filter (not . flip S.contains calledNumbers) . map fst $ M.toList numberIndexes
 
 callNumber :: Int -> Board -> Either Int Board
 callNumber n (markNewNumber n -> b@Board{..}) =
@@ -97,65 +98,8 @@ callNumber n (markNewNumber n -> b@Board{..}) =
     where
         boardWins :: [Int] -> Bool
         boardWins is =
-            all (\i -> setContains (cellList !! i) calledNumbers) is
+            all (\i -> S.contains (cellList !! i) calledNumbers) is
 
 calculateScore :: Int -> [Int] -> Int
 calculateScore lastCalled uncalled =
     sum uncalled * lastCalled
-
-
-
--- i wanna stay in base so bad lol
---
--- TODO: make these balanced
--- https://www.cmi.ac.in/~madhavan/courses/prog2-2012/lectures/balanced-search-trees-in-haskell.txt
-
-data MyMap a b
-    = Branch (MyMap a b) a b (MyMap a b)
-    | Leaf
-    deriving (Show, Read, Eq, Ord)
-
-mkMap :: Ord a => [(a, b)] -> MyMap a b
-mkMap = foldl' (\acc (k, v) -> mapInsert k v acc) mapEmpty
-
-mapEmpty :: MyMap a b
-mapEmpty = Leaf
-
-mapInsert :: Ord a => a -> b -> MyMap a b -> MyMap a b
-mapInsert k v = \case
-    Leaf ->
-        Branch Leaf k v Leaf
-    Branch l bKey bVal r ->
-        case compare k bKey of
-            EQ -> Branch l bKey v r
-            LT -> Branch (mapInsert k v l) bKey bVal r
-            GT -> Branch l bKey bVal (mapInsert k v r)
-
-mapLookup :: Ord a => a -> MyMap a b -> Maybe b
-mapLookup k = \case
-    Leaf -> Nothing
-    Branch l bKey bVal r ->
-        case compare k bKey of
-            EQ -> Just bVal
-            LT -> mapLookup k l
-            GT -> mapLookup k r
-
-mapToList :: MyMap a b -> [(a, b)]
-mapToList = \case
-    Leaf -> []
-    Branch l k v r -> (k, v) : mapToList l <> mapToList r
-
-
-newtype MySet a
-    = MySet
-        { fromMySet :: MyMap a ()
-        } deriving (Show, Read, Eq)
-
-setEmpty :: MySet a
-setEmpty = MySet mapEmpty
-
-setInsert :: Ord a => a -> MySet a -> MySet a
-setInsert k = MySet . mapInsert k () . fromMySet
-
-setContains :: Ord a => a -> MySet a -> Bool
-setContains k = isJust . mapLookup k . fromMySet
