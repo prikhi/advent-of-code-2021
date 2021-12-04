@@ -1,6 +1,6 @@
 module ParseHelper where
 
-import Control.Monad (forM_, void)
+import Control.Monad (void)
 import Data.Char (isDigit)
 import Data.List (sortOn)
 import Data.Maybe (listToMaybe)
