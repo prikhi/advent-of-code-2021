@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 module Data.Map
     ( Map
     , empty
@@ -19,9 +20,18 @@ import Prelude hiding (lookup)
 -- https://www.cmi.ac.in/~madhavan/courses/prog2-2012/lectures/balanced-search-trees-in-haskell.txt
 
 data Map a b
-    = Branch !(Map a b) !a !b !(Map a b)
+    = Branch !(BranchData a b)
     | Leaf
     deriving (Show, Read, Eq, Ord)
+
+data BranchData a b =
+    BranchData
+        { bdLeft :: !(Map a b)
+        , bdKey :: !a
+        , bdVal :: !b
+        , bdRight :: !(Map a b)
+        } deriving (Show, Read, Eq, Ord)
+
 
 empty :: Map a b
 empty = Leaf
@@ -32,23 +42,23 @@ fromList = foldl' (\acc (k, v) -> insert k v acc) empty
 toList :: Map a b -> [(a, b)]
 toList = \case
     Leaf -> []
-    Branch l k v r -> concat [toList l, [(k, v)], toList r]
+    Branch BranchData {..} -> concat [toList bdLeft, [(bdKey, bdVal)], toList bdRight]
 
 insert :: Ord a => a -> b -> Map a b -> Map a b
 insert !k !v = \case
     Leaf ->
-        Branch Leaf k v Leaf
-    Branch l bKey bVal r ->
-        case compare k bKey of
-            EQ -> Branch l bKey v r
-            LT -> Branch (insert k v l) bKey bVal r
-            GT -> Branch l bKey bVal (insert k v r)
+        Branch $ BranchData Leaf k v Leaf
+    Branch bd@BranchData{..} ->
+        case compare k bdKey of
+            EQ -> Branch bd { bdVal = v }
+            LT -> Branch bd { bdLeft = insert k v bdLeft }
+            GT -> Branch bd { bdRight = insert k v bdRight }
 
 lookup :: Ord a => a -> Map a b -> Maybe b
 lookup k = \case
     Leaf -> Nothing
-    Branch l bKey bVal r ->
-        case compare k bKey of
-            EQ -> Just bVal
-            LT -> lookup k l
-            GT -> lookup k r
+    Branch BranchData{..} ->
+        case compare k bdKey of
+            EQ -> Just bdVal
+            LT -> lookup k bdLeft
+            GT -> lookup k bdRight
