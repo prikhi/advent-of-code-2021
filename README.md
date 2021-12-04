@@ -3,7 +3,8 @@
 Do something like:
 
 ```sh
-$ runghc Day01.hs < inputs/day01.txt
+$ make run day=01
+runghc --ghc-arg=-Wall Day01.hs < inputs/day01.txt
 Part 1: 1529
 Part 2: 1567
 ```
@@ -11,7 +12,7 @@ Part 2: 1567
 File watching:
 
 ```sh
-ls *.hs inputs/*.txt | entr -s 'runghc Day04.hs < inputs/day04.txt'
+make watch day=01
 ```
 
 ## License
