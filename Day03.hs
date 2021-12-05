@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE BangPatterns #-}
-module Main where
+module Day03 where
 
 import Data.Bifunctor (bimap)
 import Data.Bits (shiftL, (.|.), setBit, testBit, complementBit, finiteBitSize, countLeadingZeros)

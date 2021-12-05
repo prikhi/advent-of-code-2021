@@ -15,6 +15,13 @@ File watching:
 make watch day=01
 ```
 
+Compiled instead of interpreted:
+
+```sh
+make compile day=05
+```
+
+
 ## License
 
 GPL-3.0+

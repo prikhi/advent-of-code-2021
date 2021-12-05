@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module Day1 where
+module Day01 where
 
 import Data.List (foldl')
 

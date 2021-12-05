@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
-module Main where
+module Day05 where
 
 import Control.Monad (void)
 import Text.ParserCombinators.ReadP
