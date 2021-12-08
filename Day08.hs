@@ -95,14 +95,14 @@ now w/ mapping from signal char -> ix, transform output displays into sorted [in
 decodeSignalOutput :: DigitDisplay -> Int
 decodeSignalOutput DigitDisplay{..} =
     let -- find pair groups
-        sigTwoOrFive  = fromJust $ L.find ((== 2) . length) ddUniquePatterns
-        [signalZero]  =  fromJust (L.find ((== 3) . length) ddUniquePatterns) L.\\ sigTwoOrFive
-        sigOneOrThree = fromJust (L.find ((== 4) . length) ddUniquePatterns) L.\\ sigTwoOrFive
-        sigFourOrSix  = fromJust (L.find ((== 7) . length) ddUniquePatterns) L.\\ (signalZero : sigOneOrThree <> sigTwoOrFive)
+        sigTwoOrFive  = findPattern ((== 2) . length)
+        [signalZero]  = findPattern ((== 3) . length) L.\\ sigTwoOrFive
+        sigOneOrThree = findPattern ((== 4) . length) L.\\ sigTwoOrFive
+        sigFourOrSix  = findPattern ((== 7) . length) L.\\ (signalZero : sigOneOrThree <> sigTwoOrFive)
 
         -- use 6-signal patterns to drill down pairs into single signals
         findSixDigitSignal otherSigs =
-            fromJust (L.find (\p -> length p == 6 && null (otherSigs L.\\ p)) ddUniquePatterns) L.\\ otherSigs
+            findPattern (\p -> length p == 6 && null (otherSigs L.\\ p)) L.\\ otherSigs
         [signalFive]  = findSixDigitSignal $ signalZero : sigOneOrThree <> sigFourOrSix
         [signalTwo]   = sigTwoOrFive L.\\ [signalFive]
         [signalSix]   = findSixDigitSignal $ signalZero : sigOneOrThree <> sigTwoOrFive
@@ -112,30 +112,32 @@ decodeSignalOutput DigitDisplay{..} =
 
         -- use found signals to convert chars into int segment positions
         convertChar c = if
-            | c == signalZero -> 0
-            | c == signalOne -> 1
-            | c == signalTwo -> 2
+            | c == signalZero  -> 0
+            | c == signalOne   -> 1
+            | c == signalTwo   -> 2
             | c == signalThree -> 3
-            | c == signalFour -> 4
-            | c == signalFive -> 5
-            | c == signalSix -> 6
+            | c == signalFour  -> 4
+            | c == signalFive  -> 5
+            | c == signalSix   -> 6
             | otherwise -> error $ "Unexpected signal char: " <> [c]
     in digitsToInt $ map (intSignalsToDigit . map convertChar) ddOutputValue
     where
+        findPattern :: (String -> Bool) -> [Char]
+        findPattern p = fromJust $ L.find p ddUniquePatterns
         digitsToInt :: [Int] -> Int
         digitsToInt = L.foldl' (\acc d -> acc * 10 + d) 0
 
 
 intSignalsToDigit :: [Int] -> Int
 intSignalsToDigit is = case L.sort is of
-    [0, 1, 2, 4, 5, 6] -> 0
-    [2, 5] -> 1
-    [0, 2, 3, 4, 6] -> 2
-    [0, 2, 3, 5, 6] -> 3
-    [1, 2, 3, 5] -> 4
-    [0, 1, 3, 5, 6] -> 5
-    [0, 1, 3, 4, 5, 6] -> 6
-    [0, 2, 5] -> 7
-    [0, 1, 2, 3, 4, 5, 6] -> 8
-    [0, 1, 2, 3, 5, 6] -> 9
+    [0, 1, 2, 4, 5, 6]      -> 0
+    [2, 5]                  -> 1
+    [0, 2, 3, 4, 6]         -> 2
+    [0, 2, 3, 5, 6]         -> 3
+    [1, 2, 3, 5]            -> 4
+    [0, 1, 3, 5, 6]         -> 5
+    [0, 1, 3, 4, 5, 6]      -> 6
+    [0, 2, 5]               -> 7
+    [0, 1, 2, 3, 4, 5, 6]   -> 8
+    [0, 1, 2, 3, 5, 6]      -> 9
     e -> error $ "Unexpected signal array: " <> show e
