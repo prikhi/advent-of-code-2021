@@ -14,5 +14,8 @@ compile:
 	./run < inputs/day$(day).txt
 	make clean
 
+new-day:
+	./mk-day.sh "$(day)"
+
 clean:
 	rm -f run Data/*.hi Data/*.o *.hi *.o

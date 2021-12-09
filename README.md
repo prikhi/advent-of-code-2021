@@ -21,6 +21,12 @@ Compiled instead of interpreted:
 make compile day=05
 ```
 
+Make files for new day:
+
+```sh
+make new-day day=09
+```
+
 
 ## License
 
