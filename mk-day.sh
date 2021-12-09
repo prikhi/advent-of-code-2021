@@ -4,6 +4,11 @@
 
 DAY="${1}"
 
+if [ -z "${DAY}" ]; then
+    echo -e "day arg required:\n\tmake new-day day=09"
+    exit 1
+fi
+
 touch "inputs/day${DAY}.txt"
 
 cat >> "Day${DAY}.hs" <<EOF
