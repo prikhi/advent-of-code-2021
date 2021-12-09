@@ -1,4 +1,4 @@
-.PHONY: run watch compile clean
+.PHONY: run watch compile watch-compile new-day clean
 
 run:
 	runghc --ghc-arg=-Wall Day$(day).hs < inputs/day$(day).txt
@@ -10,12 +10,12 @@ watch-compile:
 	ls **/*.hs inputs/*.txt | entr -s "make compile day=$(day)"
 
 compile:
-	ghc -dynamic -threaded -rtsopts -O2 -Wall -main-is Day$(day) Day$(day).hs -o run
+	ghc -dynamic -threaded -rtsopts -O2 -Wall -main-is Day$(day) Day$(day).hs -odir build -hidir build -o run
 	./run < inputs/day$(day).txt
-	make clean
+	rm -f run
 
 new-day:
 	./mk-day.sh "$(day)"
 
 clean:
-	rm -f run Data/*.hi Data/*.o *.hi *.o
+	rm -f run build
