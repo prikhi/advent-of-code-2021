@@ -7,6 +7,10 @@ DAY="${1}"
 touch "inputs/day${DAY}.txt"
 
 cat >> "Day${DAY}.hs" <<EOF
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 module Day${DAY} where
 
 import Control.Monad
@@ -20,8 +24,7 @@ import qualified Data.List as L
 import qualified GHC.Arr as A
 
 
--- getInputAndSolve (parseInput lineParser) part1 part2
--- getInputAndSolve (parseInputRaw fullParser) part1 part2
+-- (parseInput lineParser) OR (parseInputRaw fullInputParser)
 main :: IO ()
-main = putStrLn "Hello World"
+main = getInputAndSolve (const "Implement Parser") (const "Implement") (const "Implement")
 EOF
