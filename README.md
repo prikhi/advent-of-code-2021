@@ -1,6 +1,6 @@
 # Advent of Code 2021
 
-Do something like:
+To run a solution do something like:
 
 ```sh
 $ make run day=01
@@ -9,19 +9,19 @@ Part 1: 1529
 Part 2: 1567
 ```
 
-File watching:
-
-```sh
-make watch day=01
-```
-
-Compiled instead of interpreted:
+Compile instead for speed gains:
 
 ```sh
 make compile day=05
 ```
 
-Make files for new day:
+Watch files, recompile, & run:
+
+```sh
+make watch day=01
+```
+
+Make solution & input files for new day:
 
 ```sh
 make new-day day=09
