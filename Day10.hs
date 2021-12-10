@@ -14,11 +14,11 @@ import qualified Data.List as L
 
 
 main :: IO ()
-main = getInputAndSolve lines getSyntaxErrorScore getAutocompleteScore
+main = getInputAndSolve (map checkBalanced . lines) getSyntaxErrorScore getAutocompleteScore
 
-getSyntaxErrorScore :: [String] -> Int
-getSyntaxErrorScore ss =
-    sum . map scoreIllegalChar . fst . partitionEithers $ map checkBalanced ss
+getSyntaxErrorScore :: [Either Char [Char]] -> Int
+getSyntaxErrorScore =
+    sum . map scoreIllegalChar . fst . partitionEithers
     where
         scoreIllegalChar :: Char -> Int
         scoreIllegalChar = \case
@@ -28,14 +28,13 @@ getSyntaxErrorScore ss =
             '>' -> 25137
             c -> error $ "Unexpected char to score: " <> [c]
 
-getAutocompleteScore :: [String] -> Int
-getAutocompleteScore ss =
+getAutocompleteScore :: [Either Char [Char]] -> Int
+getAutocompleteScore es =
     let scores =
             L.sort
                 . map scoreRemainingChars
                 . snd
-                . partitionEithers
-                $ map checkBalanced ss
+                $ partitionEithers es
     in scores !! (length scores `div` 2)
     where
         scoreRemainingChars :: [Char] -> Int
