@@ -1,6 +1,7 @@
 module Data.Set
     ( Set
     , empty
+    , toList
     , contains
     , insert
     ) where
@@ -17,6 +18,9 @@ newtype Set a
 
 empty :: Set a
 empty = Set M.empty
+
+toList :: Set a -> [a]
+toList = map fst . M.toList . fromSet
 
 insert :: Ord a => a -> Set a -> Set a
 insert k = Set . M.insert k () . fromSet
