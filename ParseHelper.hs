@@ -6,6 +6,8 @@ import Data.List (sortOn)
 import Data.Maybe (listToMaybe)
 import Text.ParserCombinators.ReadP
 
+import qualified GHC.Arr as A
+
 
 parseInput :: Show x => ReadP x -> String -> [x]
 parseInput parser =
@@ -40,3 +42,15 @@ parseIntArray maybeStart maybeEnd = do
     ints <- sepBy parseInt (skipSpaces *> char ',' *> skipSpaces)
     mapM_ char maybeEnd
     return ints
+
+parseIntGrid :: ReadP (A.Array (Int, Int) Int)
+parseIntGrid = do
+    ls <- sepBy (many1 $ satisfy isDigit) newline <* newline
+    let height = length ls
+        width = minimum $ map length ls
+    return $ A.array ((0, 0), (height - 1, width - 1))
+        [ ((w, h), c)
+        | h <- [0 .. height - 1]
+        , w <- [0 .. width - 1]
+        , let c = read [ls !! h !! w]
+        ]
