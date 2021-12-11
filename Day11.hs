@@ -71,7 +71,7 @@ stepFlash initialGrid =
             L.foldl' runStepForPos (S.empty, incrementedGrid) $ A.indices (gGrid initialGrid)
         resetGrid =
             Grid $ A.setAll 0 (S.toList flashed) $ gGrid flashedGrid
-    in  (resetGrid, length $ S.toList flashed)
+    in  (resetGrid, length flashed)
 
 runStepForPos :: (S.Set (Int, Int), Grid) -> (Int, Int) -> (S.Set (Int, Int), Grid)
 runStepForPos (flashed, g) p =

@@ -14,6 +14,7 @@ touch "inputs/day${DAY}.txt"
 cat >> "Day${DAY}.hs" <<EOF
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
