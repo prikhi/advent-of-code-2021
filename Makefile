@@ -18,4 +18,4 @@ watch-run:
 	ls *.hs Data/* inputs/* | entr make run day=$(day)
 
 clean:
-	rm -f run build
+	rm -rf run build
