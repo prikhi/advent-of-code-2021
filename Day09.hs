@@ -12,9 +12,9 @@ import Text.ParserCombinators.ReadP
 import Harness
 import ParseHelper
 
+import qualified Data.Array as A
 import qualified Data.List as L
 import qualified Data.Set as S
-import qualified GHC.Arr as A
 
 
 main :: IO ()
@@ -43,13 +43,13 @@ riskTotal hm@HeightMap{..} =
     sum . map (\p -> hmGrid A.! p + 1) $ findLowPoints hm
 
 findLowPoints :: HeightMap -> [(Int, Int)]
-findLowPoints hm@HeightMap{..} =
+findLowPoints HeightMap{..} =
     let allPositions = [ (x, y) | y <- [0 .. hmHeight], x <- [0 .. hmWidth] ]
     in filter isLowest allPositions
     where
         isLowest :: (Int, Int) -> Bool
         isLowest p =
-            let surroundingPoints = getPointsAround hm p
+            let surroundingPoints = A.getGridNeighborsCardinal hmGrid p
                 pointValue = hmGrid A.! p
             in  all (\surroundingPoint -> hmGrid A.! surroundingPoint > pointValue) surroundingPoints
 
@@ -78,7 +78,7 @@ basinSize hm@HeightMap{..} =
 
         getInBasin :: S.Set (Int, Int) -> (Int, Int) -> (S.Set (Int, Int), [(Int, Int)])
         getInBasin claims pos =
-            let surroundingPoints = getPointsAround hm pos
+            let surroundingPoints = A.getGridNeighborsCardinal hmGrid pos
                 pointsInBasin =
                     filter
                         (\surrPos ->
@@ -93,19 +93,3 @@ basinSize hm@HeightMap{..} =
                         (newClaims, [[pos]])
                         pointsInBasin
             in second concat adjacentBasinPoints
-
-getPointsAround :: HeightMap -> (Int, Int) -> [(Int, Int)]
-getPointsAround HeightMap{..} (x, y) =
-    let surroundings =
-            [ (x + dx, y + dy)
-            | dx <- [-1 .. 1]
-            , dy <- [-1 .. 1]
-            , not $
-                (dy == 0 && dx == 0) ||
-                (abs dy == 1 && abs dx == 1)
-            ]
-    in  filter
-            (\(sx, sy) ->
-                sx >= 0 && sx <= hmWidth && sy >= 0 && sy <= hmHeight
-            )
-            surroundings
