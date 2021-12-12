@@ -12,22 +12,25 @@ fi
 touch "inputs/day${DAY}.txt"
 
 cat >> "Day${DAY}.hs" <<EOF
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 module Day${DAY} where
 
+import Control.Arrow    ((&&&))
 import Control.Monad
-import Data.Array   (Array)
+import Data.Array       (Array)
 import Data.Bifunctor
 import Data.Char
 import Data.Either
-import Data.Map     (Map)
+import Data.Map         (Map)
 import Data.Maybe
-import Data.Set     (Set)
+import Data.Set         (Set)
 import Text.ParserCombinators.ReadP
 
 import Harness
@@ -46,14 +49,14 @@ main :: IO ()
 main = getInputAndSolve (const "Implement Parser") (const "Implement") (const "Implement")
 
 
--- PARSE
-
-
-
 -- SOLVE
 
 
 
 -- HELPERS
+
+
+
+-- PARSE
 
 EOF
