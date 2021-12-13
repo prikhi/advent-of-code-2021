@@ -1,12 +1,17 @@
 module Data.Array
     ( module A
     , setAll
+    , sparseGrid
     , showGrid
+    , showGridWith
     , getGridNeighborsCardinal
     , getGridNeighborsDiagonal
     ) where
 
+import Data.Function
 import GHC.Arr as A
+
+import qualified Data.List as L
 
 
 {-# INLINABLE setAll #-}
@@ -17,13 +22,29 @@ setAll a is arr =
 
 -- GRID HELPERS
 
+{-# INLINABLE sparseGrid #-}
+-- | Build a grid from a list of points that may not represent the complete
+-- grid-space.
+sparseGrid :: a -> [((Int, Int), a)] -> A.Array (Int, Int) a
+sparseGrid defaultVal points =
+    let maxX = maximum $ map (fst . fst) points
+        maxY = maximum $ map (snd . fst) points
+        defaults = [((x, y), defaultVal) | x <- [0 .. maxX], y <- [0 .. maxY]]
+    in  array ((0, 0), (maxX, maxY)) $ L.unionBy ((==) `on` fst) points defaults
+
 {-# INLINABLE showGrid #-}
--- | Render a grid line by line.
+-- | Render a grid line by line using the elements 'show' function.
 showGrid :: Show a => A.Array (Int, Int) a -> String
-showGrid grid =
+showGrid =
+    showGridWith show
+
+{-# INLINABLE showGridWith #-}
+-- | Render a grid line by line using the given element-rendering function.
+showGridWith :: (a -> String) -> A.Array (Int, Int) a -> String
+showGridWith renderer grid =
     let (_, (width, height)) = A.bounds grid
     in  unlines
-            [ concat [ show (grid A.! (col, row)) | col <- [0 .. width] ]
+            [ concat [ renderer (grid A.! (col, row)) | col <- [0 .. width] ]
             | row <- [0 .. height]
             ]
 
