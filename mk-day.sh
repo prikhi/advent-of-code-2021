@@ -28,6 +28,8 @@ import Data.Array       (Array)
 import Data.Bifunctor
 import Data.Char
 import Data.Either
+import Data.Function    (on)
+import Data.Functor
 import Data.Map         (Map)
 import Data.Maybe
 import Data.Set         (Set)
