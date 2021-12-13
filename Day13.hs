@@ -28,7 +28,7 @@ main = getInputAndSolve (parseInputRaw parsePuzzle) foldOne foldAll
 
 foldOne :: Puzzle -> Int
 foldOne Puzzle{..} =
-    length . foldPaper pDots $ head pFolds
+    length . L.nub . foldPaper pDots $ head pFolds
 
 foldAll :: Puzzle -> PrettyOutput
 foldAll Puzzle{..} =
@@ -38,7 +38,7 @@ foldAll Puzzle{..} =
 -- HELPERS
 
 foldPaper :: [(Int, Int)] -> Fold -> [(Int, Int)]
-foldPaper dots = L.nub . \case
+foldPaper dots = \case
     FoldX i ->
         foldOn first i dots
     FoldY i ->
