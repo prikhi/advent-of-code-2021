@@ -32,15 +32,7 @@ foldOne Puzzle{..} =
 
 foldAll :: Puzzle -> PrettyOutput
 foldAll Puzzle{..} =
-    render $ L.foldl' foldPaper pDots pFolds
-    where
-        -- | Render the dots as a grid of Chars
-        render :: [(Int, Int)] -> PrettyOutput
-        render dots =
-            PrettyOutput
-                . A.showGridWith (: [])
-                . A.sparseGrid ' '
-                $ map (, '#') dots
+    renderDots $ L.foldl' foldPaper pDots pFolds
 
 
 -- HELPERS
@@ -48,25 +40,20 @@ foldAll Puzzle{..} =
 foldPaper :: [(Int, Int)] -> Fold -> [(Int, Int)]
 foldPaper dots = L.nub . \case
     FoldX i ->
-        foldLeft i dots
+        foldOn first i dots
     FoldY i ->
-        foldUp i dots
+        foldOn second i dots
 
-foldUp :: Int -> [(Int, Int)] -> [(Int, Int)]
-foldUp line =
-    map . second $ \y ->
-        if y > line then
-            2 * line - y
+foldOn
+    :: ((Int -> Int) -> (Int, Int) -> (Int, Int))
+    -> Int
+    -> [(Int, Int)] -> [(Int, Int)]
+foldOn updater line =
+    map . updater $ \v ->
+        if v > line then
+            2 * line - v
         else
-            y
-
-foldLeft :: Int -> [(Int, Int)] -> [(Int, Int)]
-foldLeft line =
-    map . first $ \x ->
-        if x > line then
-            2 * line - x
-        else
-            x
+            v
 
 -- | Helper type to prevent quotes/escape-sequences from rendering when
 -- a solver returns a String.
@@ -77,6 +64,14 @@ newtype PrettyOutput = PrettyOutput String
 -- | Render with leading newline + indentation.
 instance Show PrettyOutput where
     show (PrettyOutput s) = ("\n" <>) $ unlines $ map ("\t" <>) $ lines s
+
+-- | Render the dots as a grid of Chars
+renderDots :: [(Int, Int)] -> PrettyOutput
+renderDots dots =
+    PrettyOutput
+        . A.showGridWith (: [])
+        . A.sparseGrid ' '
+        $ map (, '#') dots
 
 
 -- PARSE
