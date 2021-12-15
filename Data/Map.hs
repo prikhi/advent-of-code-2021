@@ -7,7 +7,9 @@ module Data.Map
     , fromList
     , toList
     , mapKeys
+    , foldrWithKeys
     , insert
+    , upsert
     , lookup
     )
     where
@@ -83,6 +85,16 @@ mapKeys f = \case
             , bdKey = f bdKey
             }
 
+foldrWithKeys :: (k -> v -> b -> b) -> b -> Map k v -> b
+foldrWithKeys reducer acc = \case
+    Leaf ->
+        acc
+    Branch BranchData{..} ->
+        let rAcc = foldrWithKeys reducer acc bdRight
+            mAcc = reducer bdKey bdVal rAcc
+            lAcc = foldrWithKeys reducer mAcc bdLeft
+        in  lAcc
+
 -- | Insert the value at the given key, overriding any existing value
 insert :: Ord a => a -> b -> Map a b -> Map a b
 insert !k !v = \case
@@ -93,6 +105,17 @@ insert !k !v = \case
             EQ -> Branch bd { bdVal = v }
             LT -> Branch bd { bdLeft = insert k v bdLeft }
             GT -> Branch bd { bdRight = insert k v bdRight }
+
+upsert :: Ord a => (Maybe b -> b) -> a -> Map a b -> Map a b
+upsert maker k = \case
+    Leaf ->
+        Branch $ BranchData Leaf k (maker Nothing) Leaf
+    Branch bd@BranchData{..} ->
+        case compare k bdKey of
+            EQ -> Branch bd { bdVal = maker $ Just bdVal }
+            LT -> Branch bd { bdLeft = upsert maker k bdLeft }
+            GT -> Branch bd { bdRight = upsert maker k bdRight }
+
 
 -- | Query the Map for the given key
 lookup :: Ord a => a -> Map a b -> Maybe b
