@@ -1,6 +1,7 @@
 module Data.Set
     ( Set
     , empty
+    , fromList
     , toList
     , contains
     , insert
@@ -27,6 +28,10 @@ instance Foldable Set where
 -- | The null set
 empty :: Set a
 empty = Set M.empty
+
+-- | List to Set conversion
+fromList :: Ord a => [a] -> Set a
+fromList xs = Set . M.fromList . zip xs $ repeat ()
 
 -- | Set to List conversion
 toList :: Set a -> [a]
