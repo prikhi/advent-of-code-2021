@@ -2,6 +2,7 @@ module ParseHelper where
 
 import Control.Monad (void)
 import Data.Char (isDigit)
+import Data.Functor
 import Data.List (sortOn)
 import Data.Maybe (listToMaybe)
 import Text.ParserCombinators.ReadP
@@ -33,7 +34,9 @@ newline = choice
     ]
 
 parseInt :: ReadP Int
-parseInt = read <$> many1 (satisfy isDigit)
+parseInt = do
+    sign <- option 1 (char '-' $> (-1))
+    (sign *) . read <$> many1 (satisfy isDigit)
 
 
 parseIntArray :: Maybe Char -> Maybe Char -> ReadP [Int]
