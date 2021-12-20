@@ -48,7 +48,7 @@ import Debug.Trace
 
 -- (parseInput lineParser) OR (parseInputRaw fullInputParser)
 main :: IO ()
-main = getInputAndSolve (const "Implement Parser") (const "Implement") (const "Implement")
+main = getInputAndSolve ("Implement Parser for: " <>) id (const "Implement Part 2")
 
 
 -- SOLVE
