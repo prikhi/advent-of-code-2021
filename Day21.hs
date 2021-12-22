@@ -8,8 +8,9 @@
 {-# LANGUAGE ViewPatterns #-}
 module Day21 where
 
-import Control.Arrow ((&&&))
+import Control.Arrow    ((&&&))
 import Control.Monad
+import Data.Array       (Array)
 import Data.Bifunctor
 import Data.Function
 import Data.Maybe
@@ -19,13 +20,14 @@ import Text.ParserCombinators.ReadP
 import Harness
 import ParseHelper
 
+import qualified Data.Array as A
 import qualified Data.List as L
 import qualified Data.Map as M
 import Debug.Trace
 
 
 main :: IO ()
-main = getInputAndSolve (parseInput parsePlayer) playPracticeGame playQuantumGameDynProg
+main = getInputAndSolve (parseInput parsePlayer) playPracticeGame playQuantumGameArray
 
 
 -- SOLVE
@@ -60,8 +62,55 @@ playPracticeGame initialPlayers =
             d ->
                 succ d
 
--- TODO: this is reasonably fast, seem correct, & returns an answer of the
--- right magnitude, but the result is wrong.
+-- This one actually works! Although it seems like the same logic as the
+-- DynProg version but uses an Array instead of a Map.
+playQuantumGameArray :: [Player] -> Integer
+playQuantumGameArray = \case
+    [p1, p2] ->
+        uncurry max $ winArray A.! (0, pPosition p1, pScore p1, pPosition p2, pScore p2)
+    _ ->
+        error "Expected 2 Players"
+    where
+        -- self-recursive array that:
+        -- alternates turns
+        -- sums wins for all possible moves when score is below 21
+        -- marks a single win when a score is at/above 21
+        winArray :: Array (Int, Integer, Integer, Integer, Integer) (Integer, Integer)
+        winArray = A.listArray arrBounds
+            [ if
+                | p1Sc >= 21 -> (1, 0)
+                | p2Sc >= 21 -> (0, 1)
+                | otherwise  -> foldr
+                    (\nextMove (p1Wins, p2Wins) ->
+                        if turn == 0 then
+                            let
+                                p1Pos_ = ((p1Pos - 1 + nextMove) `mod` 10) + 1
+                                p1Sc_  = p1Sc + p1Pos_
+                                (p1W_, p2W_) = winArray A.! (1, p1Pos_, p1Sc_, p2Pos, p2Sc)
+                            in
+                                (p1Wins + p1W_, p2Wins + p2W_)
+                        else
+                            let
+                                p2Pos_ = ((p2Pos - 1 + nextMove) `mod` 10) + 1
+                                p2Sc_  = p2Sc + p2Pos_
+                                (p1W_, p2W_) = winArray A.! (0, p1Pos, p1Sc, p2Pos_, p2Sc_)
+                            in
+                                (p1Wins + p1W_, p2Wins + p2W_)
+                    )
+                    (0, 0)
+                    moves
+            | let moves = sum <$> replicateM 3 [1, 2, 3]
+            , (turn, p1Pos, p1Sc, p2Pos, p2Sc) <- A.range arrBounds
+            ]
+        -- Turn number, p1 position + score, p2 position + score
+        arrBounds
+            ::  ( (Int, Integer, Integer, Integer, Integer)
+                , (Int, Integer, Integer, Integer, Integer)
+                )
+        arrBounds = ((0, 1, 0, 1, 0), (1, 10, 30, 10, 30))
+
+-- this is fast, seem correct, & returns an answer of the right magnitude,
+-- but the result is wrong.
 playQuantumGameDynProg :: [Player] -> Integer
 playQuantumGameDynProg = \case
     [p1, p2] ->
