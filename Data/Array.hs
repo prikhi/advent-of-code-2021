@@ -1,5 +1,6 @@
 module Data.Array
     ( module A
+    , set
     , setAll
     , sparseGrid
     , showGrid
@@ -13,6 +14,11 @@ import GHC.Arr as A
 
 import qualified Data.List as L
 
+
+{-# INLINABLE set #-}
+set :: (A.Ix i) => [(i, a)] -> A.Array i a -> A.Array i a
+set is arr =
+    A.accum (\_ x -> x) arr is
 
 {-# INLINABLE setAll #-}
 setAll :: (A.Ix i) => a -> [i] -> A.Array i a -> A.Array i a
