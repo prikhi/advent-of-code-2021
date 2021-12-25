@@ -62,7 +62,7 @@ parseCharGrid validChar = do
     ls <- sepBy (many1 $ satisfy validChar) newline
     let height = length ls
         width = minimum $ map length ls
-    return $ A.array ((0, 0), (height - 1, width - 1))
+    return $ A.array ((0, 0), (width - 1, height - 1))
         [ ((w, h), c)
         | h <- [0 .. height - 1]
         , w <- [0 .. width - 1]
